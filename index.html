@@ -196,6 +196,27 @@
     .input-group { margin-bottom: 14px; }
     label { font-size: 13px; color: var(--text-dim); display: block; margin-bottom: 6px; }
 
+    input[type="text"] {
+      width: 100%;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 15px;
+      font-family: inherit;
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus { border-color: var(--accent); }
+
+    .note-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
     select, textarea {
       width: 100%;
       background: var(--bg);
@@ -377,6 +398,11 @@
     <h2>Nouveau dépôt</h2>
 
     <div class="input-group">
+      <label>Titre <span style="color:var(--text-dim);font-weight:400">(optionnel)</span></label>
+      <input type="text" id="title-input" placeholder="Un titre court…" />
+    </div>
+
+    <div class="input-group">
       <label>Catégorie</label>
       <select id="cat-select">
         <option value="idee">💡 Idée</option>
@@ -527,6 +553,7 @@
     let filtered = notes;
     if (currentFilter !== 'all') filtered = filtered.filter(n => n.cat === currentFilter);
     if (searchQuery) filtered = filtered.filter(n =>
+      (n.title || '').toLowerCase().includes(searchQuery) ||
       (n.text || '').toLowerCase().includes(searchQuery) ||
       (n.source || '').toLowerCase().includes(searchQuery) ||
       (n.vocalNote || '').toLowerCase().includes(searchQuery) ||
@@ -546,6 +573,7 @@
           '<span class="cat-tag cat-' + n.cat + '">' + catLabel(n.cat) + '</span>' +
           '<span class="note-date">' + formatDate(n.date) + '</span>' +
         '</div>' +
+        (n.title ? '<div class="note-title">' + escHtml(n.title) + '</div>' : '') +
         (n.text ? '<div class="note-text">' + escHtml(n.text) + '</div>' : '') +
         (n.source ? '<div style="margin-top:6px;font-size:12px;color:var(--text-dim)">📎 ' + escHtml(n.source) + '</div>' : '') +
         (n.audioUrl ? '<div class="note-audio"><audio controls src="' + n.audioUrl + '"></audio></div>' : '') +
@@ -653,8 +681,10 @@
 
   document.getElementById('btn-submit').addEventListener('click', () => {
     const cat = document.getElementById('cat-select').value;
+    const titleVal = document.getElementById('title-input').value.trim();
     const notes = loadNotes();
     let note = { cat, date: new Date().toISOString() };
+    if (titleVal) note.title = titleVal;
     let valid = false;
 
     if (currentMode === 'texte') {
@@ -702,6 +732,7 @@
   });
 
   function resetCompose() {
+    document.getElementById('title-input').value = '';
     document.getElementById('text-input').value = '';
     document.getElementById('paste-input').value = '';
     document.getElementById('source-input').value = '';
